@@ -1,0 +1,9 @@
+{
+  "$schema": "https://raw.githubusercontent.com/LuaLS/lua-language-server/master/locale/en-us/luarc.schema.json",
+  "runtime.version": "LuaJIT",
+  "workspace.checkThirdParty": false,
+  "workspace.library": [
+    "${3rd}/love2d/library"
+  ],
+  "diagnostics.globals": ["love"]
+}
