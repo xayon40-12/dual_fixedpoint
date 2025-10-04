@@ -4,7 +4,7 @@ Test of fixed-point acceleration with dual numbers.
 
 ## Goal
 
-The goal of this demo is to showcase the greater convergence of using dual number as a way to do a kind of line-search along the directions followed by a fixed-point iteration. The current demo show the complex plane where the origin is in the center, and the green point corresponds to the square root of the red point, which is itself controlled by the position of the cursor. The origin is represented by the white circle. The Blue curve corresponds to using a single dual which correspond to first order derivative, whereas the purple curve corresponds to using dual of dual which can access second order derivatives.
+The goal of this demo is to showcase the greater convergence of using dual number as a way to do a kind of line-search along the directions followed by a fixed-point iteration. The current demo show the complex plane where the origin is in the center, and the green point corresponds to the square root of the red point, which is itself controlled by the position of the cursor. The origin is represented by the white circle. The yellow curve correspond to simple fixed-point iteration, the cyan curve corresponds to using a single dual which correspond to first order derivative, and the magenta curve corresponds to using dual of dual which can access second order derivatives.
 
 ## Usage
 

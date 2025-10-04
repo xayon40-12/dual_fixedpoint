@@ -151,8 +151,10 @@ function love.load()
 	S.r = 10
 	S.s = 2
 	S.col = { hsl(0, 90, 70), hsl(100, 90, 70) }
-	S.col_1 = hsl(200, 90, 70)
-	S.col_2 = hsl(300, 90, 70)
+	local a = 60
+	S.col_0 = hsl(a, 90, 70)
+	S.col_1 = hsl(a+120, 90, 70)
+	S.col_2 = hsl(a+240, 90, 70)
 end
 
 function love.update(dt) end
@@ -181,6 +183,22 @@ function love.draw()
 	local zp = start
 	local d = f(z0, zp)
 	local z
+	love.graphics.setColor(S.col_0())
+	local m0 = 0
+	for i = 1, 100 do
+		d = f(z0, zp)
+		z = zp + d
+		love.graphics.line(tx(zp.a), ty(zp.b), tx(z.a), ty(z.b))
+		zp = z
+		if d:abs() < eps then
+			m0 = i
+			break
+		end
+	end
+	love.graphics.print("Order 0: " .. tostring(m0), 10, 10)
+
+	zp = start
+	d = f(z0, zp)
 	love.graphics.setColor(S.col_1())
 	local m1 = 0
 	for i = 1, 100 do
@@ -194,6 +212,7 @@ function love.draw()
 			break
 		end
 	end
+	love.graphics.print("Order 1: " .. tostring(m1), 10, 20)
 
 	zp = start
 	d = f(z0, zp)
@@ -214,9 +233,7 @@ function love.draw()
 			break
 		end
 	end
-
-	love.graphics.print("Order 1: " .. tostring(m1), 10, 10)
-	love.graphics.print("Order 2: " .. tostring(m2), 10, 20)
+	love.graphics.print("Order 2: " .. tostring(m2), 10, 30)
 end
 
 function love.mousemoved(x, y, dx, dy, istouch)
