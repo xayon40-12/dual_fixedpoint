@@ -91,6 +91,19 @@ function Complex:sqrt()
 	return Complex:new(n * math.cos(t), n * math.sin(t))
 end
 
+function Complex:normalized()
+	local n = math.sqrt(self:abs())
+	return Complex:new(self.a / n, self.b / n)
+end
+
+function Complex.zip(l, r, f)
+	return Complex:new(f(l.a, r.a), f(l.b, r.b))
+end
+
+function Complex:map(f)
+	return Complex:new(f(self.a), f(self.b))
+end
+
 function Complex:recip_zero()
 	return function(z0, z)
 		return z * z0 - z0:one()
@@ -153,8 +166,8 @@ function love.load()
 	S.col = { hsl(0, 90, 70), hsl(100, 90, 70) }
 	local a = 60
 	S.col_0 = hsl(a, 90, 70)
-	S.col_1 = hsl(a+120, 90, 70)
-	S.col_2 = hsl(a+240, 90, 70)
+	S.col_1 = hsl(a + 120, 90, 70)
+	S.col_2 = hsl(a + 240, 90, 70)
 end
 
 function love.update(dt) end
@@ -176,7 +189,7 @@ function love.draw()
 		love.graphics.circle("fill", tx(z.a), ty(z.b), S.r, 10)
 	end
 
-	local eps = 0.001
+	local eps = 0.01
 	local f = Complex:sqrt_zero()
 	local z0 = S.cz
 	local start = Complex:new(1, 0)
@@ -202,12 +215,21 @@ function love.draw()
 	love.graphics.setColor(S.col_1())
 	local m1 = 0
 	for i = 1, 100 do
-		local du = f(Dual:new(z0, Complex:zero()), Dual:new(zp, d))
-		z = zp - d * (du.a * du.b:conj() / (du.b * du.b:conj()))
-		d = du.a
+		local dz = f(
+			z0:map(function(x)
+				return Dual:new(x, 0)
+			end),
+			zp:zip(d, function(x, y)
+				return Dual:new(x, y)
+			end)
+		)
+		local nr = Complex:new(dz.a.a, dz.b.a)
+		local ne = Complex:new(dz.a.b, dz.b.b)
+		z = zp - d * Complex:new((nr.a * ne.a + nr.b * ne.b) / (ne.a * ne.a + ne.b * ne.b), 0)
 		love.graphics.line(tx(zp.a), ty(zp.b), tx(z.a), ty(z.b))
 		zp = z
-		if d:abs() < eps then
+		d = Complex:new(d.b, -d.a) -- Note: take a direction orthogonal to the current one
+		if nr:abs() < eps * eps then
 			m1 = i
 			break
 		end
@@ -219,16 +241,23 @@ function love.draw()
 	love.graphics.setColor(S.col_2())
 	local m2 = 0
 	for i = 1, 100 do
-		local ddu = f(
-			Dual:new(Dual:new(z0, Complex:zero()), Dual:new(Complex:zero(), Complex:zero())),
-			Dual:new(Dual:new(zp, d), Dual:new(d, Complex:zero()))
+		local dz = f(
+			z0:map(function(x)
+				return Dual:new(Dual:new(x, 0), Dual:new(0, 0))
+			end),
+			zp:zip(d, function(x, y)
+				return Dual:new(Dual:new(x, y), Dual:new(y, 0))
+			end)
 		)
-		d = d * (ddu.a.a * ddu.a.b:conj() / (ddu.a.b * ddu.a.b:conj() + ddu.a.a * ddu.b.b:conj()))
-		z = zp - d
-		d = ddu.a.a
+		local nr = Complex:new(dz.a.a.a, dz.b.a.a)
+		local ne = Complex:new(dz.a.a.b, dz.b.a.b)
+		local nee = Complex:new(dz.a.b.b, dz.b.b.b)
+		local acce = nr.a * nee.a + nr.b * nee.b
+		z = zp - d * Complex:new((nr.a * ne.a + nr.b * ne.b) / (ne.a * ne.a + ne.b * ne.b + math.max(0, acce)), 0)
 		love.graphics.line(tx(zp.a), ty(zp.b), tx(z.a), ty(z.b))
 		zp = z
-		if d:abs() < eps then
+		d = Complex:new(d.b, -d.a)
+		if nr:abs() < eps * eps then
 			m2 = i
 			break
 		end
